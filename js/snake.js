@@ -84,7 +84,7 @@ class Snake {
 	draw() {
 
 		ctx.drawImage(this.headImg, this.body[0].x*C_S, this.body[0].y*C_S)
-		ctx.fillStyle = "rgb(59,177,67)"
+		ctx.fillStyle = "red"//"rgb(59,177,67)"
 		for (var i = 1; i < this.body.length; i++) {
 
 			ctx.fillRect(this.body[i].x*C_S, this.body[i].y*C_S, C_S, C_S)
