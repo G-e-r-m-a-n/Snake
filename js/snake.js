@@ -21,7 +21,7 @@ var player;
 
 var food = {x: 3, y: 4};
 
-
+var isAlive = true;
 
 
 class Snake {
@@ -32,33 +32,49 @@ class Snake {
 		this.dx = 1;
 		this.dy = 0;
 
+		this.score = 0;
+
 		this.headImg = snakeRImage;
 	}
 
 	changeDirection(event) {
 		if (event.code == 'ArrowRight') {
-			this.dx = 1;
-			this.dy = 0;
-			this.headImg = snakeRImage;
+			if ((this.body.length == 1) || (this.body[0].x + 1 != this.body[1].x)) {
+				this.dx = 1;
+				this.dy = 0;
+				this.headImg = snakeRImage;
+			}
 		} else if (event.code == 'ArrowLeft') {
-			this.dx = -1;
-			this.dy = 0;
-			this.headImg = snakeLImage;
+			if ((this.body.length == 1) || (this.body[0].x - 1 != this.body[1].x)) {
+				this.dx = -1;
+				this.dy = 0;
+				this.headImg = snakeLImage;
+			}
 		} else if (event.code == 'ArrowUp') {
-			this.dx = 0;
-			this.dy = -1;
-			this.headImg = snakeUImage;
+			if ((this.body.length == 1) || (this.body[0].y - 1 != this.body[1].y)) {
+				this.dx = 0;
+				this.dy = -1;
+				this.headImg = snakeUImage;
+			}
 		} else if (event.code == 'ArrowDown') {
-			this.dx = 0;
-			this.dy = 1;
-			this.headImg = snakeDImage;
+			if ((this.body.length == 1) || (this.body[0].y + 1 != this.body[1].y)) {
+				this.dx = 0;
+				this.dy = 1;
+				this.headImg = snakeDImage;
+			}
 		}
 	}
 
 	move() {
 		var newHead = {x: this.body[0].x + this.dx, y: this.body[0].y + this.dy}
+		if (this.isDead(newHead)) {
+			isAlive = false;
+			gameOver();
+		}
+
 		this.body.unshift(newHead);
 		if (this.isAte()) {
+			this.score += 1;
 			newFood();
 		} else {
 			this.body.pop();			
@@ -68,7 +84,7 @@ class Snake {
 	draw() {
 
 		ctx.drawImage(this.headImg, this.body[0].x*C_S, this.body[0].y*C_S)
-		ctx.fillStyle = "blue"
+		ctx.fillStyle = "rgb(59,177,67)"
 		for (var i = 1; i < this.body.length; i++) {
 
 			ctx.fillRect(this.body[i].x*C_S, this.body[i].y*C_S, C_S, C_S)
@@ -81,13 +97,45 @@ class Snake {
 		}
 		return false;
 	}
+
+	isDead(newHead) {
+		if (this.isWall(newHead)) {
+			return true;
+		}
+		if (this.isTail(newHead)) {
+			return true;
+		}
+		return false;
+	}
+
+	isWall(newHead) {
+		if ((newHead.x < 1) || (newHead.y < 3) || (newHead.x > 17) || (newHead.y > 17)) {
+			return true;
+		}
+		return false;
+	}
+
+	isTail(newHead) {
+		for(var i = 0; i < this.body.length-1; i++) {
+			if ((newHead.x == this.body[i].x) && (newHead.y == this.body[i].y)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
+function gameOver() {
+	ctx.fillStyle = "black"
+	ctx.font = "50px Arial";
+	ctx.fillText("GAME OVER", 4.75*C_S, 9*C_S);	
+	clearInterval(game)
 
+}
 
 function newFood() {
-	food.x = Math.floor(Math.random()*19);
-	food.y = Math.floor(Math.random()*19);
+	food.x = Math.floor(Math.random()*17) + 1;
+	food.y = Math.floor(Math.random()*15) + 3;
 }
 
 
@@ -103,6 +151,10 @@ function moveAll() {
 
 function drawAll() {
 	ctx.drawImage(groundImage, 0, 0);
+	ctx.fillStyle = "white"
+	ctx.font = "50px Arial";
+	ctx.fillText(player.score, 2.5*C_S, 1.7*C_S);
+
 
 	ctx.drawImage(foodImage, food.x*C_S, food.y*C_S);
 
@@ -111,7 +163,9 @@ function drawAll() {
 
 function gameLoop() {
 	moveAll();
-	drawAll();
+	if (isAlive) {
+		drawAll();
+	}
 }
 
 
