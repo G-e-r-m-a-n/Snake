@@ -20,7 +20,7 @@ const C_S = 32;
 var player;
 
 var food = {x: 3, y: 4};
-
+   
 var isAlive = true;
 
 
@@ -65,6 +65,44 @@ class Snake {
 		}
 	}
 
+	changeDirectionM(event) {
+		var rect = canvas.getBoundingClientRect();
+		var x = Math.floor(event.clientX - rect.left);
+		var y = Math.floor(event.clientY - rect.top);
+
+		if (Math.abs(x - this.body[0].x*C_S + C_S/2) > Math.abs(y - this.body[0].y*C_S + C_S/2)) {
+			if (x > this.body[0].x*C_S + C_S/2) {
+				if ((this.body.length == 1) || (this.body[0].x + 1 != this.body[1].x)) {
+					this.dx = 1;
+					this.dy = 0;
+					this.headImg = snakeRImage;
+				}
+			} else if (x < this.body[0].x*C_S + C_S/2) {
+				if ((this.body.length == 1) || (this.body[0].x - 1 != this.body[1].x)) {
+					this.dx = -1;
+					this.dy = 0;
+					this.headImg = snakeLImage;
+				}
+			}
+		} else {
+			if (y < this.body[0].y*C_S + C_S/2) {
+				if ((this.body.length == 1) || (this.body[0].y - 1 != this.body[1].y)) {
+					this.dx = 0;
+					this.dy = -1;
+					this.headImg = snakeUImage;
+				}
+			} else if (y > this.body[0].y*C_S + C_S/2) {
+				if ((this.body.length == 1) || (this.body[0].y + 1 != this.body[1].y)) {
+					this.dx = 0;
+					this.dy = 1;
+					this.headImg = snakeDImage;
+				}
+			}
+
+		}
+
+	}
+
 	move() {
 		var newHead = {x: this.body[0].x + this.dx, y: this.body[0].y + this.dy}
 		if (this.isDead(newHead)) {
@@ -76,13 +114,19 @@ class Snake {
 		if (this.isAte()) {
 			this.score += 1;
 			newFood();
+
+			if (this.score ==  17) {
+				isAlive = false;
+				drawAll();
+				youWin();
+			}
+
 		} else {
 			this.body.pop();			
 		}
 	}
 
 	draw() {
-
 		ctx.drawImage(this.headImg, this.body[0].x*C_S, this.body[0].y*C_S)
 		ctx.fillStyle = "rgb(59,177,67)"
 		for (var i = 1; i < this.body.length; i++) {
@@ -133,6 +177,14 @@ function gameOver() {
 
 }
 
+function youWin() {
+	ctx.fillStyle = "red"
+	ctx.font = "50px Arial";
+	ctx.fillText("You Win", 7*C_S, 9*C_S);	
+	clearInterval(game)
+
+}
+
 function newFood() {
 	food.x = Math.floor(Math.random()*17) + 1;
 	food.y = Math.floor(Math.random()*15) + 3;
@@ -162,6 +214,7 @@ function drawAll() {
 }
 
 function gameLoop() {
+	
 	moveAll();
 	if (isAlive) {
 		drawAll();
@@ -170,7 +223,6 @@ function gameLoop() {
 
 
 function main() {
-
 	init();
 
 	game = setInterval(gameLoop, 300)
@@ -178,6 +230,11 @@ function main() {
 
 document.addEventListener("keydown", function chdir(event) {
 	player.changeDirection(event);
+})
+
+
+canvas.addEventListener("mousemove", function chdir(event) {
+	player.changeDirectionM(event);
 })
 
 main()
